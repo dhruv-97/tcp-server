@@ -1,11 +1,29 @@
 var net = require('net');
-var client = net.connect({port: 8080}, function() {
-   console.log('connected to server!');  
+ 
+var HOST = 'localhost';
+var PORT = 3000;
+ 
+var client = new net.Socket();
+ 
+client.connect(PORT, HOST, function() {
+    console.log('Client connected to: ' + HOST + ':' + PORT);
+    // Write a message to the socket as soon as the client is connected, the server will receive it as message from the client 
+    client.write('Hello World!');
+ 
 });
-client.on('data', function(data) {
-   console.log(data.toString());
-   client.end();
+ 
+client.on('data', function(data) {    
+    console.log('Client received: ' + data);
+     if (data.toString().endsWith('exit')) {
+       client.destroy();
+    }
 });
-client.on('end', function() { 
-   console.log('disconnected from server');
+ 
+// Add a 'close' event handler for the client socket
+client.on('close', function() {
+    console.log('Client closed');
+});
+ 
+client.on('error', function(err) {
+    console.error(err);
 });

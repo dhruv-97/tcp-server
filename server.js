@@ -1,13 +1,28 @@
-var net = require('net');
-var server = net.createServer(function(connection) { 
-   console.log('client connected');
-   
-   connection.on('end', function() {
-      console.log('client disconnected');
-   });
-   connection.write('**,imei:864893030415601,122,13.127.138.238,3000');
-   connection.pipe(connection);
+ const net = require('net')
+// Configuration parameters
+var HOST = 'localhost';
+var PORT = 3000;
+ 
+// Create Server instance 
+var server = net.createServer(onClientConnected);  
+ 
+server.listen(PORT, HOST, function() {  
+  console.log('server listening on %j', server.address());
 });
-server.listen(9000, function() { 
-   console.log('server is listening');
-});
+ 
+function onClientConnected(sock) {  
+  var remoteAddress = sock.remoteAddress + ':' + sock.remotePort;
+  console.log('new client connected: %s', remoteAddress);
+ 
+  sock.on('data', function(data) {
+    console.log('%s Says: %s', remoteAddress, data);
+    sock.write(data);
+    sock.write(' exit');
+  });
+  sock.on('close',  function () {
+    console.log('connection from %s closed', remoteAddress);
+  });
+  sock.on('error', function (err) {
+    console.log('Connection %s error: %s', remoteAddress, err.message);
+  });
+};
